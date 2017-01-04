@@ -1,0 +1,75 @@
+--Modify it to show the matchid and player name for all goals scored by Germany. To identify German players, check for: teamid = 'GER'
+SELECT matchid, player FROM goal WHERE teamid = 'GER';
+
+--Show id, stadium, team1, team2 for just game 1012
+SELECT id,stadium,team1,team2
+  FROM game
+WHERE id = 1012;
+
+--Modify it to show the player, teamid, stadium and mdate and for every German goal.
+SELECT gl.player, gl.teamid,gm.stadium, gm.mdate
+FROM game gm JOIN goal gl ON (id=matchid)
+where gl.teamid = 'GER';
+
+--Show the team1, team2 and player for every goal scored by a player called Mario player LIKE 'Mario%'
+SELECT gm.team1, gm.team2, gl.player
+  FROM game gm JOIN goal gl ON (id=matchid)
+WHERE gl.player LIKE 'Mario%';
+
+--Show player, teamid, coach, gtime for all goals scored in the first 10 minutes gtime<=10.
+SELECT g.player, g.teamid, t.coach, g.gtime
+  FROM goal g 
+  JOIN eteam t
+  ON g.teamid = t.id
+ WHERE g.gtime<=10;
+ 
+--List the the dates of the matches and the name of the team in which 'Fernando Santos' was the team1 coach.
+select g.mdate, t.teamname
+FROM game g
+JOIN eteam t
+ON g.team1 = t.id
+WHERE t.coach = 'Fernando Santos';
+
+--List the player for every goal scored in a game where the stadium was 'National Stadium, Warsaw'.
+SELECT gl.player
+FROM game gm
+JOIN goal gl
+ON gm.id=gl.matchid
+WHERE gm.stadium = 'National Stadium, Warsaw';
+
+--Instead show the name of all players who scored a goal against Germany.
+SELECT DISTINCT gl.player
+  FROM game gm JOIN goal gl ON gl.matchid = gm.id 
+    WHERE ((gm.team1='GER' OR gm.team2 = 'GER') AND gl.teamid != 'GER' );
+	
+--Show teamname and the total number of goals scored.
+SELECT t.teamname, count(g.teamid) as 'No. of Goals'
+FROM eteam t 
+JOIN goal g 
+ON t.id = g.teamid
+GROUP BY t.teamname;
+
+--Show the stadium and the number of goals scored in each stadium.
+SELECT gm.stadium, count(*)
+FROM game gm 
+JOIN goal gl
+ON gm.id = gl.matchid
+GROUP BY gm.stadium;
+
+--For every match involving 'POL', show the matchid, date and the number of goals scored.
+SELECT gl.matchid, MAX(gm.mdate), COUNT(gl.teamid)
+FROM game gm JOIN goal gl ON gl.matchid = gm.id 
+WHERE (gm.team1 = 'POL' OR gm.team2 = 'POL') 
+GROUP BY gl.matchid; -- Displays the latest date on which the match was played in the stadium 
+
+--For every match where 'GER' scored, show matchid, match date and the number of goals scored by 'GER'
+SELECT gm.id, gm.mdate, COUNT(gl.player)
+FROM game gm
+  JOIN goal gl ON (gm.id=gl.matchid AND (gm.team1 = 'GER' OR gm.team2 = 'GER') AND gl.teamid='GER')
+GROUP BY gm.id, gm.mdate;
+
+--List every match with the goals scored by each team as shown. This will use "CASE WHEN" which has not been explained in any previous exercises.
+SELECT mdate,
+  team1,
+  CASE WHEN teamid=team1 THEN 1 ELSE 0 END score1
+  FROM game JOIN goal ON matchid = id;
