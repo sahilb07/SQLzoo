@@ -57,19 +57,23 @@ ON gm.id = gl.matchid
 GROUP BY gm.stadium;
 
 --For every match involving 'POL', show the matchid, date and the number of goals scored.
-SELECT gl.matchid, MAX(gm.mdate), COUNT(gl.teamid)
-FROM game gm JOIN goal gl ON gl.matchid = gm.id 
-WHERE (gm.team1 = 'POL' OR gm.team2 = 'POL') 
-GROUP BY gl.matchid; -- Displays the latest date on which the match was played in the stadium 
+SELECT gl.matchid, gm.mdate, COUNT(gl.player)
+  FROM game gm JOIN goal gl ON matchid = id 
+ WHERE (gm.team1 = 'POL' OR gm.team2 = 'POL')
+GROUP BY gl.matchid,gm.mdate 
 
 --For every match where 'GER' scored, show matchid, match date and the number of goals scored by 'GER'
-SELECT gm.id, gm.mdate, COUNT(gl.player)
-FROM game gm
-  JOIN goal gl ON (gm.id=gl.matchid AND (gm.team1 = 'GER' OR gm.team2 = 'GER') AND gl.teamid='GER')
-GROUP BY gm.id, gm.mdate;
+SELECT gl.matchid, gm.mdate, COUNT(gl.player)
+  FROM game gm JOIN goal gl ON matchid = id 
+ WHERE (gm.team1 = 'GER' OR gm.team2 = 'GER') AND gl.teamid = 'GER'
+GROUP BY gl.matchid,gm.mdate
 
 --List every match with the goals scored by each team as shown. This will use "CASE WHEN" which has not been explained in any previous exercises.
-SELECT mdate,
-  team1,
-  CASE WHEN teamid=team1 THEN 1 ELSE 0 END score1
-  FROM game JOIN goal ON matchid = id;
+SELECT gm.mdate,
+  gm.team1,
+  SUM(CASE WHEN gl.teamid=gm.team1 THEN 1 ELSE 0 END ) as 'score1',
+  gm.team2,
+  SUM(CASE WHEN gl.teamid = gm.team2 THEN 1 ELSE 0 END) as 'score2'
+  FROM game gm LEFT JOIN goal gl ON gl.matchid = gm.id -- To take in to account games in which no Goal was scored.
+GROUP BY gm.mdate,gm.team1,gm.team2
+ORDER BY gm.mdate,gm.team1,gm.team2;
